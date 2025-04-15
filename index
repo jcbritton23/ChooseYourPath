@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Path: Embracing Thorny Topics in Therapy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Base and Framed View Styling */
+        body {
+            /* Subtle background gradient */
+            background: linear-gradient(to bottom, #f0f4f8, #e6eaf0);
+            background-attachment: fixed;
+            font-family: 'Inter', sans-serif; /* Using Inter for UI, Lora for dialogue */
+            color: #333;
+        }
+
+        /* Main Game Container */
+        #game-container {
+             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08); /* Softer shadow */
+             border-radius: 16px; /* More rounded */
+             background-color: rgba(255, 255, 255, 0.99);
+             position: relative;
+             overflow: visible; /* Allow modal to overflow */
+             max-width: 800px;
+             margin: 2.5rem auto; /* More margin */
+             /* Consistent padding */
+             padding: 2rem; /* Base padding */
+        }
+        @media (min-width: 640px) { /* sm */
+            #game-container { padding: 2.5rem; }
+        }
+         @media (min-width: 768px) { /* md */
+            #game-container { padding: 3rem; }
+        }
+
+
+        /* Controls Area (Top Right) - Improved Layout */
+        .controls-container {
+            position: absolute;
+            top: 20px; /* More space from top */
+            right: 25px; /* More space from right */
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Increased gap */
+            z-index: 10;
+        }
+        .progress-indicator-container { display: flex; align-items: center; gap: 8px; }
+        .tab-indicator-group { display: flex; gap: 5px; }
+        .tab-indicator { width: 24px; height: 30px; background-color: #e2e8f0; border: 1px solid #cbd5e1; border-bottom: none; border-radius: 5px 5px 0 0; font-size: 12px; display: flex; align-items: center; justify-content: center; color: #718096; transition: all 0.3s ease; opacity: 0.8; font-weight: 500; }
+        .tab-indicator.tab-active { background-color: #a0d2db; color: #2c5282; opacity: 1; font-weight: 600; border-color: #90c2cb; box-shadow: 0 -2px 5px rgba(44, 82, 130, 0.1); transform: translateY(-2px); }
+        .branching-line-graphic { width: 40px; height: 20px; border-left: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; border-radius: 0 0 0 6px; transition: border-color 0.3s ease; margin-right: 5px; } /* Added margin */
+        .branching-line-graphic.dp1-active { border-color: #a0d2db; }
+        .branching-line-graphic.dp2-active { border-bottom-color: #80b2bb; border-left-color: #80b2bb; }
+        .branching-line-graphic.dp3-active { border-bottom-color: #6092a0; border-left-color: #6092a0; }
+        #model-key-button { background: none; border: none; font-size: 1.7rem; /* Slightly larger */ cursor: pointer; color: #94a3b8; /* Lighter grey */ transition: color 0.2s ease; line-height: 1; padding: 0 5px; }
+        #model-key-button:hover { color: #334155; } /* Darker hover */
+
+        /* Model Key Modal - Improved Style */
+        #model-key-modal {
+            display: none;
+            position: absolute;
+            top: 65px; /* Adjust based on controls height */
+            right: 25px;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px; /* More rounded */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12); /* Enhanced shadow */
+            padding: 1.5rem; /* Increased padding */
+            z-index: 20;
+            max-width: 380px; /* Slightly wider */
+            opacity: 0; /* Start hidden for transition */
+            transform: translateY(-10px); /* Start slightly up */
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #model-key-modal.visible { /* Class to toggle visibility */
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #model-key-modal h4 { font-weight: 600; margin-bottom: 1rem; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; font-size: 1.15em; }
+        #model-key-modal ul { list-style-type: none; padding-left: 0; color: #475569; font-size: 0.95em; line-height: 1.7; }
+        #model-key-modal li { margin-bottom: 0.5rem; padding-left: 1.25rem; position: relative; }
+        #model-key-modal li::before { content: "•"; color: #a0d2db; /* Accent color */ position: absolute; left: 0; top: 1px; font-weight: bold; }
+        #model-key-modal li strong { font-weight: 600; color: #334155; }
+        #model-key-modal button.close-modal { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; line-height: 1; padding: 2px; transition: color 0.2s ease;}
+        #model-key-modal button.close-modal:hover { color: #475569; }
+
+
+        /* Intro Screen Model Display */
+        .model-summary-box { border: 1px solid #e2e8f0; border-left: 5px solid #a0d2db; /* Accent color */ padding: 1rem 1.25rem; margin-top: 2rem; background-color: #f8fafc; border-radius: 8px; font-size: 0.9em; }
+        .model-summary-box h4 { font-weight: 600; color: #4a5568; margin-bottom: 0.75rem; font-size: 1.05em; }
+        .model-summary-box ul { list-style-type: none; padding-left: 0; margin-bottom: 0.5rem; }
+        .model-summary-box li { margin-bottom: 0.3rem; position: relative; padding-left: 1rem; }
+        .model-summary-box li::before { content: "›"; color: #a0d2db; position: absolute; left: 0; top: -1px; font-weight: bold;}
+        .model-summary-box strong { font-weight: 600; }
+
+
+        /* Text & Dialogue Styling */
+        #dialogue-text { font-family: 'Lora', serif; /* Specific dialogue font */ line-height: 1.75; /* More spacing */ }
+        #dialogue-text strong.speaker-name { font-weight: 600; } /* Default speaker strong */
+        #dialogue-text strong.speaker-therapist { color: #0f766e; /* Teal variant for Alex */ } /* Applied in JS */
+        #dialogue-text strong.speaker-therapist.maya { color: #4f46e5; /* Indigo variant for Maya */ } /* Applied in JS */
+        #dialogue-text strong.speaker-client { color: #334155; } /* Darker grey for client */
+        .behavioral-cue { font-family: 'Inter', sans-serif; /* UI font for cues */ font-style: italic; color: #64748b; background-color: #f1f5f9; padding: 0.3rem 0.7rem; border-radius: 6px; margin: 0.6rem 0; display: inline-block; border: 1px solid #e2e8f0; font-size: 0.9em; }
+
+
+        /* Choice Box Styling */
+        #choices-container { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; }
+        .choice-prompt { font-style: italic; color: #64748b; margin-bottom: 1.5rem; text-align: center; font-size: 0.95em; }
+        .choice-box { display: block; width: 100%; text-align: left; padding: 1rem 1.5rem; margin-bottom: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #ffffff; cursor: pointer; transition: all 0.25s ease-in-out; opacity: 0; color: #334155; font-family: 'Inter', sans-serif; }
+        .choice-box:hover { border-color: #a0d2db; background-color: #f7fcfc; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06); transform: translateY(-2px); }
+        .choice-box.fade-in { opacity: 1; }
+        .choice-text { font-style: normal; font-size: 1em; font-weight: 500; } /* Slightly bolder choices */
+
+
+        /* Summary Screen Styling */
+        .summary-section h3 { font-weight: 600; margin-bottom: 0.75rem; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; font-size: 1.2em; }
+        .summary-section ul { list-style-type: none; padding-left: 0.5rem; margin-bottom: 1.5rem; color: #475569; line-height: 1.8; }
+        .summary-section li { margin-bottom: 0.5rem; position: relative; padding-left: 1.75rem; /* More space for icon */ }
+        .summary-section li::before { /* Icon placeholder */ content: '○'; font-weight: bold; font-size: 1.1em; position: absolute; left: 0; top: 2px; color: #cbd5e1; transition: color 0.3s ease; }
+        .summary-section li.step-engaged::before { content: '✓'; color: #38a169; /* Green */ }
+        .summary-section p { color: #475569; line-height: 1.7; margin-bottom: 0.75rem; font-family: 'Lora', serif; } /* Body font for reflection */
+        .summary-section strong.label { color: #2c5282; font-weight: 600; font-family: 'Inter', sans-serif; } /* UI font for labels */
+        #summary-screen.rupture-summary {}
+        #summary-screen.rupture-summary h2 { color: #c53030; }
+        .rupture-summary #summary-content { border-left: 6px solid #e53e3e; padding-left: 1.5rem; padding-top: 0.5rem; }
+
+
+        /* Buttons */
+        button.primary-button, button.secondary-button { font-weight: 600; padding: 0.7rem 1.75rem; /* Slightly larger */ border-radius: 8px; transition: all 0.2s ease; border: none; cursor: pointer; font-family: 'Inter', sans-serif; letter-spacing: 0.025em; }
+        button.primary-button:disabled { background-color: #94a3b8; cursor: not-allowed; }
+        button.primary-button { background-color: #4a5568; color: white; }
+        button.primary-button:hover:not(:disabled) { background-color: #334155; box-shadow: 0 4px 10px rgba(74, 85, 104, 0.2); }
+        button.secondary-button { background-color: #e2e8f0; color: #4a5568; border: 1px solid #cbd5e1; margin-left: 0.5rem; }
+        button.secondary-button:hover { background-color: #cbd5e1; }
+        button.scenario-button-alex { background-color: #38B2AC; color: white; font-weight: 600; padding: 0.8rem 1.2rem; border-radius: 8px; transition: all 0.2s ease; width: 100%; text-align: center; border: none; }
+        button.scenario-button-alex:hover { background-color: #2C7A7B; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(44, 122, 123, 0.2); }
+        button.scenario-button-maya { background-color: #667EEA; color: white; font-weight: 600; padding: 0.8rem 1.2rem; border-radius: 8px; transition: all 0.2s ease; width: 100%; text-align: center; border: none; }
+        button.scenario-button-maya:hover { background-color: #5A67D8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(90, 103, 216, 0.2); }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) { /* md */
+            #game-container { margin: 1.5rem auto; }
+            .controls-container { top: 15px; right: 15px; gap: 15px; }
+            .choice-box { padding: 0.9rem 1.2rem; }
+            .choice-text { font-size: 0.95em; }
+            #model-key-modal { max-width: 90%; right: 5%; top: 60px; }
+        }
+         @media (max-width: 480px) { /* xs */
+            body { font-size: 15px; /* Slightly smaller base font */ }
+            #game-container { margin: 1rem auto; padding: 1.5rem; }
+             .progress-indicator-container { display: none; } /* Hide progress on very small screens */
+             .controls-container { gap: 10px; right: 10px; }
+             #model-key-button { font-size: 1.5rem; }
+             #model-key-modal { padding: 1rem; }
+             #model-key-modal h4 { font-size: 1.1em; }
+             #model-key-modal li { font-size: 0.9em; }
+             button.primary-button, button.secondary-button { padding: 0.6rem 1.2rem; font-size: 0.9em;}
+             .choice-box { padding: 0.8rem 1rem; }
+             .choice-text { font-size: 0.9em; }
+             .summary-section h3 { font-size: 1.1em; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+
+    <div id="game-container" class="w-full">
+        <!-- Controls: Progress Indicators & Model Key -->
+        <div class="controls-container">
+            <div class="progress-indicator-container">
+                 <div id="branching-line" class="branching-line-graphic"></div>
+                 <div class="tab-indicator-group">
+                    <div id="tab-dp1" class="tab-indicator" title="Decision Point 1">1</div>
+                    <div id="tab-dp2" class="tab-indicator" title="Decision Point 2">2</div>
+                    <div id="tab-dp3" class="tab-indicator" title="Decision Point 3">3</div>
+                </div>
+            </div>
+             <button id="model-key-button" title="Show Model Key" class="hidden">ⓘ</button>
+        </div>
+
+        <!-- Model Key Modal (Hidden by default) -->
+        <div id="model-key-modal">
+            <button class="close-modal" onclick="toggleModelKey(false)" title="Close">&times;</button>
+            <h4 id="model-key-title">Model Key</h4>
+            <div id="model-key-content">
+                <!-- Content dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- Scenario Selection Screen -->
+        <div id="scenario-selection-screen">
+            <h1 class="text-2xl sm:text-3xl font-semibold mb-6 text-gray-800 border-b pb-4 text-center" style="font-family: 'Lora', serif;">Choose Your Path: Embracing Thorny Topics in Therapy</h1>
+            <h2 class="text-xl font-medium mb-6 text-gray-700 text-center">Select a Scenario:</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Scenario 1: Alex -->
+                <div class="border border-gray-200 p-6 rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm flex flex-col justify-between hover:shadow-lg transition-shadow duration-300 ease-in-out">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2 text-teal-800">Scenario 1: Alex</h3>
+                        <p class="text-sm text-gray-600 mb-4 leading-relaxed">Navigate a conversation with a mid-30s white male manager experiencing workplace stress and anxiety around DEI initiatives, focusing on his experience and underlying beliefs.</p>
+                    </div>
+                    <button id="start-alex-button" class="scenario-button-alex mt-auto">
+                        Start Alex's Session
+                    </button>
+                </div>
+                <!-- Scenario 2: Maya -->
+                 <div class="border border-gray-200 p-6 rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-sm flex flex-col justify-between hover:shadow-lg transition-shadow duration-300 ease-in-out">
+                     <div>
+                        <h3 class="text-lg font-semibold mb-2 text-indigo-800">Scenario 2: Maya</h3>
+                        <p class="text-sm text-gray-600 mb-4 leading-relaxed">Work with a young Black female designer facing burnout and complex workplace dynamics. <span class="font-medium">*This scenario begins with a potential therapist microaggression. Focus on repair and validation.</span></p>
+                    </div>
+                    <button id="start-maya-button" class="scenario-button-maya mt-auto">
+                        Start Maya's Session
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Initial Setup Screen (Dynamic) -->
+        <div id="intro-screen" class="hidden">
+             <h1 class="text-2xl sm:text-3xl font-semibold mb-4 text-gray-800 border-b pb-3" id="intro-title" style="font-family: 'Lora', serif;"></h1>
+             <div id="intro-content" class="text-gray-700 space-y-4 leading-relaxed mb-6 text-sm sm:text-base" style="font-family: 'Lora', serif;">
+                 <!-- Client info loaded here -->
+             </div>
+             <div id="intro-model-summary" class="model-summary-box">
+                 <!-- Model summary loaded here -->
+             </div>
+             <button id="start-session-button" class="primary-button w-full sm:w-auto mt-8">
+                 Start Session
+             </button>
+        </div>
+
+        <!-- Main Dialogue Screen -->
+        <div id="dialogue-screen" class="hidden">
+            <div id="dialogue-text" class="mb-8 space-y-4 text-base min-h-[150px]">
+                 <!-- Dialogue loaded here -->
+            </div>
+             <div id="proceed-button-container" class="mt-10 text-center hidden">
+                 <button id="proceed-to-summary-button" class="primary-button">Proceed to Summary</button>
+            </div>
+            <div id="choices-container" class="hidden">
+                 <p class="choice-prompt">You consider your response...</p>
+                 <div id="choices" class="mt-6">
+                     <!-- Choices loaded here -->
+                 </div>
+            </div>
+        </div>
+
+        <!-- End Summary Screen -->
+        <div id="summary-screen" class="hidden">
+             <h2 class="text-2xl sm:text-3xl font-semibold mb-6 text-gray-800 border-b pb-4" id="summary-title" style="font-family: 'Lora', serif;">Session Summary & Reflection</h2>
+            <div id="summary-content" class="space-y-6 text-sm sm:text-base mb-8">
+                <div class="summary-section">
+                    <h3><strong class="label">🧩 Therapeutic Model Focus:</strong> <span id="summary-model-name" class="font-normal text-gray-700"></span></h3>
+                    <ul id="summary-model-steps">
+                        <!-- Model steps with engagement indicators loaded here -->
+                    </ul>
+                </div>
+                 <div class="summary-section">
+                     <h3><strong class="label">🌟 Reflection & Alliance Impact:</strong></h3>
+                     <p id="summary-reflection-text"></p>
+                     <p id="summary-rupture-note" class="mt-3 font-semibold text-red-700 hidden">Note: Significant therapeutic rupture or weakened alliance.</p>
+                 </div>
+            </div>
+            <div class="mt-10 pt-8 border-t border-gray-200">
+                 <label for="playerReflection" class="block text-lg font-semibold text-gray-700 mb-3">Personal Reflection:</label>
+                 <textarea id="playerReflection" rows="4" class="w-full p-4 border border-gray-300 rounded-lg shadow-sm text-base placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition duration-150 ease-in-out" placeholder="What are your key takeaways or reflections from this simulated session? (This text is not saved)"></textarea>
+            </div>
+             <button id="reset-button" class="primary-button mt-8 w-full sm:w-auto">
+                Return to Scenario Selection
+             </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Global State & Element Variables ---
+        let currentScenario = null;
+        let gameData = {};
+        let summaries = {};
+        let introData = {};
+        let modelData = {};
+        let currentNodeKey = null;
+
+        // DOM element variables
+        let scenarioSelectionScreen, introScreen, dialogueScreen, summaryScreen;
+        let introTitleElement, introContentElement, introModelSummaryElement;
+        let dialogueTextElement, choicesContainer, choicesElement, proceedButtonContainer, proceedToSummaryButton;
+        let summaryContentElement, summaryTitleElement, summaryModelNameElement, summaryModelStepsElement, summaryReflectionTextElement, summaryRuptureNoteElement;
+        let tabDp1, tabDp2, tabDp3, branchingLine;
+        let playerReflectionElement;
+        let startAlexButton, startMayaButton, startSessionButton, resetButton;
+        let modelKeyButton, modelKeyModal, modelKeyTitle, modelKeyContent;
+
+        // --- Model Definitions ---
+        const models = {
+            drustrup: {
+                name: "Drustrup's Model for Addressing Racism",
+                steps: [ { id: "drustrup_listen", text: "<strong>Listen, Empathize, Validate Emotion:</strong> Hear underlying feelings without agreeing with racist statements." }, { id: "drustrup_explore", text: "<strong>Explore Racial Consciousness:</strong> Ask open questions about race/whiteness experiences and beliefs." }, { id: "drustrup_connect", text: "<strong>Connect to Client Concerns:</strong> Link views on race to presenting problems, relationships, or goals." }, { id: "drustrup_psychoed", text: "<strong>Psychoeducation (Carefully):</strong> Offer info/perspectives on racism/bias when rapport allows." }, { id: "drustrup_encourage", text: "<strong>Encourage New Perspectives:</strong> Suggest resources/reflection to broaden understanding." } ]
+            },
+            warner: {
+                name: "Warner's LET-UP Model for Microaggression Response/Repair",
+                steps: [ { id: "warner_listen", text: "<strong>Listen (Internal & External):</strong> Notice reactions (yours/client's); Acknowledge potential misstep." }, { id: "warner_empathize", text: "<strong>Empathize:</strong> Validate client's feeling; Apologize sincerely for impact." }, { id: "warner_tell", text: "<strong>Tell Story (Strategically):</strong> Share brief, relevant reflection for repair (use cautiously)." }, { id: "warner_understand", text: "<strong>Understand:</strong> Explore impact/meaning for the client; Consider broader context." }, { id: "warner_psychoed", text: "<strong>Psycho-educate:</strong> After repair, offer info on microaggressions/bias if helpful." } ]
+            }
+        };
+
+        // --- Intro Data ---
+         const introDataAlex = {
+            title: "Scenario: Alex",
+            content: `<p><strong class="font-semibold speaker-client">Client:</strong> Alex, mid-30s, white man, mid-level corporate manager.</p><p><strong class="font-semibold speaker-client">Presenting Problem:</strong> Workplace stress, general anxiety. Increasingly uncomfortable/defensive in workplace DEI conversations; fears saying the wrong thing.</p><p><strong class="font-semibold speaker-client">Session Context:</strong> Alex brings up discomfort with recent DEI trainings.</p>`,
+            modelSummaryHtml: `<h4>Focus: Drustrup Model</h4>
+                             <ul><li>Listen & Validate Emotion</li><li>Explore Racial Consciousness</li><li>Connect to Client Concerns</li><li>Psychoeducate (Carefully)</li><li>Encourage New Perspectives</li></ul>
+                             <p class="mt-2 text-xs italic text-gray-500">Goal: Navigate discomfort, explore underlying beliefs, connect race talk to goals.</p>`
+        };
+        const introDataMaya = {
+            title: "Scenario: Maya",
+            content: `<p><strong class="font-semibold speaker-client">Client:</strong> Maya, late 20s, Black woman, talented Junior Graphic Designer at a competitive agency.</p><p><strong class="font-semibold speaker-client">Presenting Problem:</strong> Sought therapy for significant burnout, anxiety, and imposter syndrome; struggles with feeling unheard or undervalued at work despite skills.</p><p><strong class="font-semibold speaker-client">Session Context:</strong> Maya is sharing frustration after her idea was dismissed, then later praised when presented by a white male colleague (Mark).</p><p class="italic mt-3 text-red-700"><span class="font-medium">Note: Session begins with a potential therapist microaggression. Focus on repair (LET-UP).</span></p>`,
+            modelSummaryHtml: `<h4>Focus: Warner's LET-UP Model</h4>
+                             <ul><li>Listen (Internal/External)</li><li>Empathize & Apologize</li><li>Tell Story (Strategically)</li><li>Understand Impact</li><li>Psycho-educate (Post-Repair)</li></ul>
+                              <p class="mt-2 text-xs italic text-gray-500">Goal: Recognize & repair microaggression, validate experience, explore impact.</p>`
+        };
+
+        // --- Game Data (Alex) ---
+        const gameDataAlex = {
+            start: { alexSays: ["<span class='behavioral-cue'>(Alex shifts in his seat, running a hand through his hair. He avoids direct eye contact initially.)</span>","So, work… it’s been intense. Deadlines are piling up, which is normal, but… there’s this other layer lately. You know, I’ve mentioned the stress, but honestly, a big part of it is navigating all the… *stuff* around diversity and inclusion.","<span class='behavioral-cue'>(He sighs, leaning back slightly, looking frustrated.)</span>","We had another mandatory training last week. And look, I genuinely believe in fairness, treating people right, all of that. But the way these things are run, the conversations… it feels like a minefield. Like you’re constantly walking on eggshells.","People seem so quick to jump on you, to assume the worst if you don't use the exact perfect language. It feels like… I don’t know, like common sense has gone out the window sometimes? Like maybe people are just *too* sensitive about race these days.","<span class='behavioral-cue'>(He glances up, checking your reaction, a defensive edge to his tone.)</span>","Is that off-base? I’m not trying to be a jerk, I just feel like I can’t say anything right. Am I just overthinking this whole thing?"], therapistChoices: [ { text: "It sounds incredibly stressful and draining, Alex, feeling like you're navigating a minefield at work where any comment could potentially lead to negative judgment.", nextNode: "alex_dp1_validate" }, { text: "That feeling of walking on eggshells sounds really uncomfortable. Can you tell me about a specific time recently where you felt that way, where you worried about saying the wrong thing?", nextNode: "alex_dp1_explore_specifics" }, { text: "You came in initially talking about increased workplace stress and anxiety. How does this specific fear of 'saying the wrong thing' around DEI topics contribute to that overall feeling of stress?", nextNode: "alex_dp1_connect_anxiety" } ] },
+            alex_dp1_validate: { alexSays: ["<span class='behavioral-cue'>(Nods emphatically, relief washing over his face briefly.)</span>","Yes! Exactly! 'Minefield' is the perfect word. It's exhausting trying to constantly second-guess how something might land. You *want* to be a good colleague, a good manager, be seen as fair… but it feels like one clumsy word and suddenly you're labeled 'part of the problem'.","<span class='behavioral-cue'>(He leans forward slightly, earnestness returning.)</span>","So then you think, 'Okay, maybe I should just keep my mouth shut on these topics.' But that feels wrong too! It feels like copping out, or maybe people will think I don't care or I agree with things I don't. It feels like there’s no winning."], therapistChoices: [ { text: "That sounds like a really difficult bind – feeling like you risk judgment if you speak, but feel like you're copping out or being misunderstood if you stay silent. Can we explore that 'no-win' situation a bit more?", nextNode: "alex_dp2_bind"}, { text: "You mentioned wanting to be seen as fair and not wanting to 'cop out'. When you imagine these conversations going *well*, what would that look like? What are you hoping for?", nextNode: "alex_dp2_ideal" } ] },
+            alex_dp1_explore_specifics: { alexSays: ["<span class='behavioral-cue'>(Takes a breath, seems willing to share but still hesitant.)</span>","Okay, yeah. So, during that DEI workshop last week… they were talking about equitable hiring practices. And honestly, I was trying to understand the practical application. So, I raised my hand and said something like, 'This is all important, but at the end of the day, shouldn't we primarily focus on hiring the best person for the job, based on skills and experience, regardless of anything else?'","<span class='behavioral-cue'>(His expression clouds over, recalling the moment.)</span>","Which, to me, felt like… basic fairness? Meritocracy? But the reaction… the whole room just went silent. Like, *dead* quiet. I could feel people looking at me, not exactly angry, but… maybe disappointed? Or like I’d just revealed I was completely clueless.","Nobody directly challenged it, but the facilitator just sort of nodded tightly and moved on really quickly to the next slide. And I’m sitting there feeling about two inches tall, thinking, 'What did I just step in? Was that offensive? Or is everyone just hyper-sensitive?' I wasn't *trying* to be offensive, I genuinely thought it was a valid point for discussion!"], therapistChoices: [ { text: "Wow, that sounds like a really jarring and uncomfortable moment – going from contributing what felt like a fair point to sudden silence and feeling judged or clueless. Can we stay with what that *felt* like inside when the room went quiet and the facilitator moved on?", nextNode: "alex_dp2_explore_feeling" }, { text: "It sounds like the *lack of explanation* following the silence was particularly difficult, leaving you completely unsure of what had happened or why your comment landed badly.", nextNode: "alex_dp2_focus_lack_clarity" }, { text: "That 'best person for the job' framing often comes up in these discussions, and it can be complex. Setting aside the specifics of the comment for a moment, what was the strongest *feeling* that hit you when you felt that silence and saw the facilitator move on?", nextNode: "alex_dp2_explore_feeling_alt" } ] },
+             alex_dp1_connect_anxiety: { alexSays: ["<span class='behavioral-cue'>(Nods slowly, thinking)</span>","How does it contribute? It's huge. It's like… the regular work stress – the deadlines, the projects – that feels manageable, predictable mostly. But this DEI stuff… it feels unpredictable. The rules seem unclear, or like they change, or like I'm missing some subtext everyone else gets.","So, that uncertainty, that fear of stepping on a landmine I didn't even see… it adds this constant, low-level hum of anxiety underneath everything else. It makes me dread certain meetings, makes me overthink emails… It definitely drains my battery faster."], therapistChoices: [ { text: "So it's the *unpredictability* and the fear of unintentionally crossing lines you don't fully understand that really amplifies the baseline stress. That 'missing the subtext' feeling sounds particularly isolating.", nextNode: "alex_dp2_explore_uncertainty" }, { text: "You mentioned fearing you'll step on a landmine. What's the core fear about what happens *if* you do? What's the 'explosion' you're worried about?", nextNode: "alex_dp2_connect_fear_core" } ] },
+            alex_dp2_bind: { alexSays: ["<span class='behavioral-cue'>(Leans forward, voice tight with frustration)</span>","Yeah, the 'no-win'... it feels paralyzing sometimes. If I stay quiet, especially when maybe some questionable comment *is* made by someone else, I feel complicit, like a coward. It goes against how I see myself, you know? I want to be someone who stands for fairness.","But the second I think about speaking up, especially if I'm not 100% sure I have the 'right' perspective, I imagine getting shot down, or getting that look like I'm some out-of-touch dinosaur. It makes my stomach clench just thinking about it. So mostly, I just... stay quiet and feel lousy about it."], therapistChoices: [ { text: "That sounds incredibly difficult – wanting to live up to your value of fairness but feeling paralyzed by the fear of judgment or making a mistake. How does that conflict between your values and your fear play out internally?", nextNode: "alex_end_bind_values_conflict" }, { text: "It takes a lot of mental energy to constantly weigh those risks. When you're in that moment, feeling that paralysis and stomach clenching, what helps you manage that physical anxiety?", nextNode: "alex_end_bind_coping" } ] },
+            alex_dp2_ideal: { alexSays: ["<span class='behavioral-cue'>(Leans back, tone more wistful.)</span>","Honestly? I just wish there was... assumption of good intent? If I say something clumsy, maybe someone could say, 'Hey, I think what you might be missing is X,' instead of just... judgment. Or space to ask questions without it being seen as an attack. Like, 'Help me understand why we're approaching it this way?'", "<span class='behavioral-cue'>(Makes eye contact)</span>", "I'd rather have awkward clarification than silent condemnation."], therapistChoices: [ { text: "What does getting that kind of clarification, instead of silence or judgment, represent for you? Why is that openness and assumption of good intent so important?", nextNode: "alex_end_ideal_meaning" }, { text: "It sounds like you value directness and learning. Is there a way *you* could frame your questions or comments in those tricky moments to explicitly invite clarification or signal your intent to understand?", nextNode: "alex_end_ideal_strategy" } ] },
+             alex_dp2_explore_feeling: { alexSays: ["<span class='behavioral-cue'>(Takes a slow breath, looks down)</span>","What it felt like? Honestly? Humiliating. Suddenly feeling like the ignorant kid in the class who just said something stupid. And exposed – like everyone could suddenly see I wasn't as competent or 'with it' as I thought I was.","And yeah, frustrated. Frustrated that it wasn't a conversation. If I was off-base, why didn't someone just *say* so? Why the silence? It felt condescending, like I wasn't even worth engaging with."], therapistSays: "So, a potent mix: humiliation, feeling exposed and incompetent, and frustrated or dismissed by the lack of direct feedback?", alexFollowUp: "<span class='behavioral-cue'>(Nods, meeting your gaze)</span> Yeah. Especially the 'not worth engaging with' part. That stung.", therapistChoices: [ { text: "Let's stay with that feeling of 'not worth engaging with'. What did that specific feeling signify to you about how others might see you in that context?", nextNode: "alex_end_feeling_meaning_dismissed" }, { text: "It sounds like directness, even if critical, feels more respectful to you than silence. Why is that direct engagement, that explanation, so important?", nextNode: "alex_end_feeling_need_directness" } ] },
+            alex_dp2_focus_lack_clarity: { alexSays: ["<span class='behavioral-cue'>(Nods emphatically)</span>", "Yeah, that was *exactly* it! The silence was bad, but the fact that nobody, not even the facilitator, bothered to explain *why*... that's what really got me spinning.", "It felt like a deliberate withholding, or like I wasn't even worth the effort of correcting. Just label me and move on."], therapistChoices: [ { text: "That feeling of being intentionally left in the dark, 'not worth correcting,' sounds deeply dismissive. What does that dismissal stir up for you emotionally?", nextNode: "alex_end_lack_clarity_dismissal" }, { text: "If you had gotten an explanation, even if it was critical, how do you imagine that might have felt different compared to the silence?", nextNode: "alex_end_lack_clarity_need_diff" }, { text: "Given that frustrating experience, have you considered finding a way to ask for clarification afterward, maybe from the facilitator or HR?", nextNode: "alex_end_lack_clarity_strategy" } ] },
+            alex_dp2_explore_feeling_alt: { alexSays: ["<span class='behavioral-cue'>(Pauses, shifts focus inward)</span>","The core feeling? Honestly... exposed. Like I was suddenly naked in the room. And maybe foolish? Like I'd revealed some ignorance I didn't know I had. And definitely frustrated that it just... hung there."], therapistChoices: [ { text: "That combination – feeling exposed, foolish, and frustrated – sounds really intense. Which part felt the strongest or lingered the most?", nextNode: "alex_end_feeling_alt_strongest" }, { text: "Let's stay with 'exposed'. What was threatening about feeling exposed in that particular moment?", nextNode: "alex_end_feeling_alt_exposed" } ] },
+            alex_dp2_explore_uncertainty: { alexSays: ["<span class='behavioral-cue'>(Nods)</span>", "Yeah, isolating is a good word for it. Like everyone else got a memo I didn't. It makes you doubt your own judgment, your own instincts about social situations. Am I completely misreading things? Or are the rules just completely different now?", "It creates this constant low-level paranoia, almost."], therapistChoices: [ { text: "That feeling of 'missing the memo' and the self-doubt it creates sounds really unsettling. How does that uncertainty impact how you interact with colleagues day-to-day?", nextNode: "alex_end_uncertainty_impact" }, { text: "When you say 'the rules are different now,' what specific 'rules' or expectations feel unclear or changed to you?", nextNode: "alex_end_uncertainty_rules" } ] },
+            alex_dp2_connect_fear_core: { alexSays: ["<span class='behavioral-cue'>(Looks down, voice lower)</span>", "The 'explosion'? Being publicly called out. Being labeled as racist or sexist in front of my team. Losing their trust, their respect. Maybe even facing formal consequences from HR. It feels like it could derail everything I've worked for.", "And honestly? Part of the fear is... what if they're right? What if I *am* biased and just don't see it?"], therapistChoices: [ { text: "That sounds like a profound fear – not just external consequences like losing respect or career impact, but also the internal fear of having a blind spot, of unintentionally causing harm.", nextNode: "alex_end_fear_consequence_internal" }, { text: "Focusing on the external piece first – the fear of being called out or facing consequences. How likely do you actually feel that is in your workplace?", nextNode: "alex_end_fear_consequence_external" } ] },
+            // --- End Nodes ---
+             alex_end_bind_values_conflict: { alexSays: ["<span class='behavioral-cue'>(Sighs deeply)</span>", "Internally? It's a constant battle. Part of me wants to speak up for what seems right or fair, the way I was raised to think about it. Another part is terrified of being wrong, of being shamed publicly. Usually, the fear wins, and then I beat myself up for not being braver or more principled. It's exhausting."], windingDown: "That internal battle between your values and your fear, and the subsequent self-criticism, sounds incredibly draining. Acknowledging that intense conflict is important. Let's pause there.", proceedToSummary: true, summaryRef: "alex_summary_bind_values_conflict" },
+             alex_end_bind_coping: { alexSays: ["(Thinks) Staying centered... Deep breath helps. Trying not to react defensively. Pausing.", "<span class='behavioral-cue'>(Reflective)</span>"], windingDown: "Those grounding techniques are valuable tools. Out of time.", proceedToSummary: true, summaryRef: "alex_summary_bind_coping" },
+             alex_end_ideal_meaning: { alexSays: ["(Leans forward) Why? Respectful? Fair? If issue, tell them! More adult, professional. Silence feels cowardly, or power play.", "<span class='behavioral-cue'>(Earnest)</span>"], windingDown: "Connecting clarity with respect/professionalism is clear. Time's up.", proceedToSummary: true, summaryRef: "alex_summary_ideal_meaning" },
+             alex_end_ideal_strategy: { alexSays: ["(Nods) Frame questions... Maybe preface 'Trying to understand...' or 'Help me see connection...'? Signal learning, not challenge?", "<span class='behavioral-cue'>(Uncertain but considering)</span>"], windingDown: "Framing questions signals openness. Strategy to consider. We'll pause.", proceedToSummary: true, summaryRef: "alex_summary_ideal_strategy" },
+             alex_end_feeling_meaning_dismissed: { alexSays: ["<span class='behavioral-cue'>(Looks troubled)</span>", "It signified that maybe my perspective, the one that feels like common sense to me based on my background, is just... irrelevant now? Or worse, actively harmful? And that maybe I'm too out of touch to even be worth the time to educate. It makes me feel... obsolete, almost."], windingDown: "Connecting that dismissal to feeling irrelevant or 'obsolete' in these conversations is a powerful, and likely painful, realization. Let's hold that thought.", proceedToSummary: true, summaryRef: "alex_summary_feeling_meaning_dismissed" },
+             alex_end_feeling_need_directness: { alexSays: ["Why directness? Because guessing games feel passive-aggressive and unproductive. If there's a problem, let's address it. Even if it's uncomfortable, at least it's honest. The silence feels like being handled with kid gloves, or worse, like a trap.", "<span class='behavioral-cue'>(Voice firm)</span>"], windingDown: "Valuing honest, direct engagement, even when uncomfortable, over silence is very clear. We'll end there.", proceedToSummary: true, summaryRef: "alex_summary_feeling_need_directness" }, // Needs summary
+             alex_end_lack_clarity_dismissal: { alexSays: ["(Voice tightens) Stir up? Anger, mostly. Like, how dare they just shut me down without a word? And... yeah, maybe some shame too? Like I *should* have known better, even if I don't know *what* I should have known.", "<span class='behavioral-cue'>(Frustrated)</span>"], windingDown: "Anger and shame together is a tough mix, especially tied to feeling dismissed. Let's hold onto acknowledging those as we close.", proceedToSummary: true, summaryRef: "alex_summary_lack_clarity_dismissal" },
+             alex_end_lack_clarity_need_diff: { alexSays: ["Different? Yeah. Like I said, maybe still awkward, but *resolved*. I wouldn't be replaying the silence, the looks. I'd be replaying the *explanation*. It feels more concrete.", "<span class='behavioral-cue'>(Seems convinced)</span>"], windingDown: "That distinction between replaying silence versus replaying an explanation highlights your need for clarity. Let's pause.", proceedToSummary: true, summaryRef: "alex_summary_lack_clarity_need_diff" },
+             alex_end_lack_clarity_strategy: { alexSays: ["Ask afterward? Ugh, maybe. It feels super awkward now, like bringing it up again just confirms I'm clueless. But maybe... I could talk to Sarah in HR? She seemed approachable.", "<span class='behavioral-cue'>(Hesitant but considering)</span>"], windingDown: "Considering seeking clarification, even with the awkwardness, is a potential path forward. We'll end here for today.", proceedToSummary: true, summaryRef: "alex_summary_lack_clarity_strategy" },
+             alex_end_feeling_alt_strongest: { alexSays: ["(Thinks) Strongest? Probably the 'exposed' part. It felt sudden and deeply uncomfortable, like all eyes were on me for the wrong reasons.", "<span class='behavioral-cue'>(Shifts uncomfortably)</span>"], windingDown: "That feeling of being suddenly exposed stands out. An important feeling to recognize. Let's stop here.", proceedToSummary: true, summaryRef: "alex_summary_feeling_alt_strongest" },
+             alex_end_feeling_alt_exposed: { alexSays: ["Threatening? It felt like... my competence was being questioned? Or my belonging? Like maybe I wasn't smart enough or aware enough to be part of this 'in the know' group.", "<span class='behavioral-cue'>(Voice lower)</span>"], windingDown: "Connecting feeling exposed to questions about competence or belonging is significant. Let's hold that thought.", proceedToSummary: true, summaryRef: "alex_summary_feeling_alt_exposed" },
+             alex_end_uncertainty_impact: { alexSays: ["How it impacts interactions? I'm definitely more reserved. Less likely to joke around on certain topics, less likely to offer opinions unless specifically asked. It probably makes me seem more distant or serious than I actually am.", "<span class='behavioral-cue'>(Reflects)</span>"], windingDown: "Recognizing that shift towards being more reserved and potentially seeming distant is important self-awareness. We'll pause there.", proceedToSummary: true, summaryRef: "alex_summary_uncertainty_impact" }, // Needs summary
+             alex_end_uncertainty_rules: { alexSays: ["Changed rules? It feels like... intent doesn't matter as much as impact, which I sort of get, but it feels absolute. And the language... using the wrong term accidently feels like a major crime. It wasn't like this 10 years ago. It feels like you need a PhD just to talk about social issues without offending someone.", "<span class='behavioral-cue'>(Sounds overwhelmed)</span>"], windingDown: "Feeling overwhelmed by the shifting norms around language and the emphasis on impact over intent sounds like a key source of the anxiety. Let's hold onto that.", proceedToSummary: true, summaryRef: "alex_summary_uncertainty_rules" }, // Needs summary
+             alex_end_fear_consequence_internal: { alexSays: ["(Nods slowly) Yeah... the external stuff is scary, but the internal part... the 'what if I really AM biased?'... that's harder. It makes me question everything. How can I be a fair manager if I have blind spots I don't even know about?", "<span class='behavioral-cue'>(Looks genuinely troubled)</span>"], windingDown: "Sitting with that difficult question – 'How can I be fair with unknown blind spots?' – takes courage. Acknowledging that internal fear is crucial. We'll stop here.", proceedToSummary: true, summaryRef: "alex_summary_fear_consequence_internal" }, // Needs summary
+             alex_end_fear_consequence_external: { alexSays: ["How likely? I don't know... probably low for formal consequences right now? But the informal ones – losing respect, being seen differently by my team, especially the younger ones... that feels very possible. One wrong comment shared around, you know?", "<span class='behavioral-cue'>(Looks worried)</span>"], windingDown: "Distinguishing between the types of consequences and acknowledging the real fear of informal impact like lost respect is important. Let's end there.", proceedToSummary: true, summaryRef: "alex_summary_fear_consequence_external" } // Needs summary
+        };
+
+        // --- Game Data (Maya) ---
+        const gameDataMaya = {
+            start: { therapistStarts: "That sounds incredibly frustrating, Maya, having your idea initially dismissed like that with Mark. Thinking about it from a different angle, though... isn't it also a testament to your creativity that the core concept itself was strong enough for the agency to ultimately run with it? It does show your ideas have inherent value, even if the process wasn't smooth this time. The team still benefits from your contribution in the end.", mayaSays: ["<span class='behavioral-cue'>(Maya goes quiet for a noticeable moment. The animation drains from her face, replaced by a look of disbelief mixed with weariness. She gives a small, tight smile that doesn't reach her eyes.)</span>","'A... testament to my creativity?'","<span class='behavioral-cue'>(She repeats the phrase softly, a slight, almost imperceptible shake of her head.)</span>","'Right. Good for the team.'","<span class='behavioral-cue'>(Her voice loses its energy, becoming flat. She shifts her gaze down to her lap, breaking eye contact.)</span>"], therapistChoices: [ { text: "Hearing myself say that, Maya, I realize I completely glossed over the unfairness and frustration you must be feeling by jumping to a 'silver lining'. That wasn't attuned to your experience at all, and I sincerely apologize. Can we please go back to what that was actually like for you when Mark presented your idea?", nextNode: "maya_dp1_repair_direct" }, { text: "Understood. So, thinking back to when you first presented the idea yourself, what specific feedback did the team give you at that point?", nextNode: "maya_dp1_ignore_details" }, { text: "I hear the frustration, but sometimes looking at the bigger picture outcome *can* help manage those feelings. The fact remains, your core idea *was* successful... but okay, tell me more about the initial feedback you received.", nextNode: "maya_dp1_justify_minimize" } ] },
+            maya_dp1_repair_direct: { mayaSays: ["<span class='behavioral-cue'>(Looks up slowly, her expression still wary but the flatness lessens slightly. She seems surprised by the directness of the apology.)</span>","Oh. Okay… thank you. For saying that.","<span class='behavioral-cue'>(She pauses, seems to consider engaging more openly.)</span>","Yeah, it just… it really felt like you were saying the unfairness – the part where *I* didn't get heard, where *he* got the credit – didn't matter as much as the final product. Like my actual experience of it was just… collateral damage for the company's win. It felt very dismissive."], therapistChoices: [ { text: "Thank you for telling me exactly how that landed – 'dismissive' and like your experience was 'collateral damage'. That's powerful feedback, and I hear it. It makes complete sense you'd feel that way. Can we stay with that feeling of dismissal for a moment? What's that like for you?", nextNode: "maya_dp2_explore_dismissal" }, { text: "I really appreciate you explaining the impact so clearly. Does that feeling – like your specific experience or contribution is being dismissed or minimized – feel familiar? Does it connect to other things you've experienced, perhaps at work or related to the burnout?", nextNode: "maya_dp2_connect_pattern" }, { text: "I hear that. It's crucial you feel seen and validated here. Given how my comment landed and the original situation, what do you feel you need most from our conversation right now?", nextNode: "maya_dp2_ask_needs_post_repair" } ] },
+            maya_dp1_ignore_details: { mayaSays: ["<span class='behavioral-cue'>(Doesn't look up immediately. When she does, her expression is carefully neutral, almost blank. Her voice remains monotone.)</span>","The feedback?","It was just… vague things. You know. 'Needs a bit more polish.' 'Not quite hitting the mark yet.' 'Let's put a pin in this and revisit.' Standard brush-off stuff.","<span class='behavioral-cue'>(She offers minimal information, picking at a loose thread on her jeans. Her body language seems more closed off.)</span>"], therapistChoices: [ { text: "'Needs polish,' 'not quite hitting the mark'... that sounds frustratingly vague and unhelpful. Did they offer any concrete examples at all?", nextNode: "maya_dp2_ignore_push_details" }, { text: "Maya, forgive me for interrupting the flow, but I'm sensing a real shift in energy since my comment earlier about the 'positive sign'. I'm concerned I might have misstepped and invalidated how you were feeling. Can we pause and check in about that?", nextNode: "maya_dp2_belated_repair_attempt" }, { text: "Okay. Dealing with vague feedback like that on top of everything else must really add to the burnout. What are your go-to ways of coping when work feels particularly draining like this?", nextNode: "maya_dp2_ignore_shift_coping" } ] },
+            maya_dp1_justify_minimize: { mayaSays: ["<span class='behavioral-cue'>(Looks up sharply, disbelief hardening into clear frustration and anger. Her voice loses all flatness, gaining a hard edge.)</span>","Put things in *perspective*? Are you serious? My work was taken, Mark got the praise for *my concept*, and you think the 'perspective' is that *my* talent is somehow shown in that?","<span class='behavioral-cue'>(She shakes her head, leaning back sharply and crossing her arms defensively.)</span>","That doesn't feel like perspective. That feels like you minimizing what happened. Like you're telling me I shouldn't be upset because the agency benefited from my idea even if I didn't. Is that *honestly* what you think I should feel right now?"], therapistChoices: [ { text: "No, absolutely not. You are 100% right to call me out. Hearing you reflect that back, I clearly see how minimizing and invalidating my comment was. Focusing on the company benefit completely erased your experience of unfairness and harm. I sincerely apologize. That was a significant misstep, thank you for challenging me directly.", nextNode: "maya_dp2_repair_after_justify" }, { text: "I'm not saying you *shouldn't* feel upset, Maya, but sometimes finding a different angle *can* be a tool to help manage intense feelings. The creative industry often involves subjective interpretations and team dynamics...", nextNode: "maya_end_rupture_double_down" }, { text: "Okay, I can see I've clearly upset you, and that wasn't my intention at all. Perhaps we should set my comment aside for now and try to refocus on the details of the initial feedback you received about the project itself?", nextNode: "maya_end_rupture_dismiss_anger" } ] },
+            maya_dp2_explore_dismissal: { mayaSays: ["<span class='behavioral-cue'>(Nods slowly, seems to relax her shoulders a fraction more. Eye contact is steadier.)</span>","It feels… small. Like my contribution, my effort, my *perspective* just doesn't carry the same weight. When it happens repeatedly, it makes you start to wonder if they see you as… less capable? Less credible? It makes all the extra hours feel… kind of pointless. Like, why kill myself striving if it doesn't get seen as *mine* anyway?"], therapistChoices: [ { text: "Feeling like your effort is 'pointless' or that you're seen as less capable or credible sounds incredibly demoralizing. Can you tell me more about that feeling of being 'replaceable'?", nextNode: "maya_end_explore_replaceable" }, { text: "You mentioned feeling 'stupid for caring so much'. What does that thought tell you about how you value your work or yourself in this environment?", nextNode: "maya_end_explore_stupid_caring" } ] }, // Added second choice
+            maya_dp2_connect_pattern: { mayaSays: ["<span class='behavioral-cue'>(Thinks, a flicker of recognition in her eyes)</span>","Does it feel familiar? Unfortunately, yeah. It's not always this blatant, but there's often this… subtle sense that my ideas need to be validated by someone else, usually someone white or male, before they're taken seriously. Or getting feedback on my 'tone' when I push back.","It absolutely feeds the burnout. It's exhausting having to constantly navigate that, to feel like you have to work twice as hard just to get to the same starting line."], therapistChoices: [ { text: "That dynamic you're describing – needing external validation, the 'tone policing', feeling you have to work 'twice as hard' – is sadly a common experience reported by many Black women and women of color in professional spaces. It sounds incredibly exhausting and unfair. Tell me more about how that impacts you day-to-day.", nextNode: "maya_end_explore_twice_hard" }, { text: "Let's focus on how this directly feeds the burnout. Can you describe the connection? How does navigating these dynamics drain your energy specifically?", nextNode: "maya_end_link_burnout_specific" } ] },
+             maya_dp2_ask_needs_post_repair: { mayaSays: ["<span class='behavioral-cue'>(Takes a breath, seems to gather her thoughts)</span>","What do I need right now? Honestly? Just... for you to really hear the unfairness of it all, the original situation with Mark *and* how comments like the one you made, even if unintentional, can sting. And maybe help me figure out if this is a real pattern I need to address, or if I'm just being too sensitive like I sometimes worry I am. The self-doubt is really loud sometimes."], therapistChoices: [ { text: "Okay. Hear the unfairness, acknowledge the sting of comments, explore the pattern versus self-doubt. Absolutely. Let's start with exploring your perception – what makes you feel this *is* a real pattern, despite the self-doubt?", nextNode: "maya_end_reality_testing" }, { text: "Got it. Hear the unfairness, acknowledge the sting, explore the pattern. Let's focus completely on the unfairness of that original situation with Mark right now, without any 'silver linings'. Tell me more about the moment you realized your idea was being presented by him.", nextNode: "maya_end_explore_original_unfairness" } ] },
+             maya_dp2_ignore_push_details: { mayaSays: ["<span class='behavioral-cue'>(Gives a short, non-committal shrug, still avoiding eye contact. Picks more insistently at the thread.)</span>","Specifics? No. Like I said, it was just… a feeling. 'Not quite there'. Can we maybe just move on?", "<span class='behavioral-cue'>(Her voice is tight now, clearly signalling discomfort or annoyance with the current line of questioning.)</span>"], therapistChoices: [ { text: "You know what, Maya, you're right. I hear the discomfort in your voice. I've been pushing for details when it seems like something else is going on. I need to circle back to my comment earlier – I'm concerned it shut things down between us. Can we please talk about that?", nextNode: "maya_dp2_belated_repair_attempt_forced" }, { text: "Okay, understood. If you'd prefer to move on from the specifics of the feedback, we can certainly do that. Where would you like to focus instead?", nextNode: "maya_end_ignore_honor_request_move_on" } ] },
+             maya_dp2_belated_repair_attempt: { mayaSays: ["<span class='behavioral-cue'>(Looks up, her expression hard to read – maybe suspicion mixed with weariness.)</span>","Your comment? About the 'positive sign'?","<span class='behavioral-cue'>(She pauses for a long moment, seeming to weigh whether it's worth engaging.)</span>","Yeah. I guess. It just felt… really disconnected from what I was actually feeling and trying to tell you. Like you weren't really hearing the frustrating part, the unfair part.", "<span class='behavioral-cue'>(She says it cautiously, the emotional connection still feels tenuous.)</span>"], therapistChoices: [ { text: "Thank you for telling me that, Maya. 'Disconnected' and 'not hearing the frustrating part' – that's crucial feedback. I completely missed the mark, and I sincerely apologize for that impact. Can we stay with that feeling of frustration and unfairness you were having then?", nextNode: "maya_dp3_repair_accepted_explore" }, { text: "Okay, I appreciate the honesty. That's helpful for me to know. I apologize. Can we try to get back now to the original situation with Mark and the feedback?", nextNode: "maya_dp3_weak_repair_move_on" } ] },
+            maya_dp2_ignore_shift_coping: { mayaSays: ["<span class='behavioral-cue'>(Sighs softly, resigned. Still minimal eye contact.)</span>","Coping? I don't know. Sometimes I just put on headphones and blast music. Try to take a walk at lunch if I can actually get away.","I try to leave work at work, but it's hard... especially when things feel unfair or unresolved. It replays in my head.", "<span class='behavioral-cue'>(Answers feel rote, low energy.)</span>"], therapistChoices: [ { text: "Music and walks sound like good ways to try and create some space during the day. What kind of music do you find most helpful for that?", nextNode: "maya_end_surface_coping" }, { text: "You mentioned it's hard to disconnect when things feel 'unfair or unresolved'. That sounds important. Does that feeling connect back specifically to the incident with Mark, or maybe even how our conversation started earlier?", nextNode: "maya_dp3_probe_unresolved" } ] },
+            maya_dp2_repair_after_justify: { mayaSays: ["<span class='behavioral-cue'>(The sharp anger in her expression softens, replaced by a guarded, assessing look. Her arms might slowly uncross, but she remains wary.)</span>","Okay.","<span class='behavioral-cue'>(There's a long, tense pause. She seems to be evaluating the sincerity of the apology.)</span>","Okay... Thank you for saying that. Because yeah, it felt really invalidating. Like you were completely taking the company's side, not mine. Like the impact on me didn't register."], therapistChoices: [ { text: "I absolutely understand how it came across that way, and how invalidating that must have felt. My focus was completely misplaced. Let's stay right here with how invalidating and frustrating that experience was for you.", nextNode: "maya_dp3_repair_accepted_explore" }, { text: "Thank you for telling me that directly, Maya. It's vital feedback. What do you need from me right now in this moment to feel truly heard and supported regarding this whole situation?", nextNode: "maya_dp3_repair_ask_needs" } ] },
+            maya_dp3_repair_accepted_explore: { mayaSays: ["<span class='behavioral-cue'>(Nods, seems a bit more grounded, though still tired)</span>","It's that feeling again… like my perspective just doesn't count as much. Like I'm maybe overreacting or being difficult if I point out the unfairness, because others don't see it or don't want to.","<span class='behavioral-cue'>(Connects it to her self-doubt again)</span>","It makes me constantly second-guess myself."], therapistChoices: [ { text: "That link between feeling your perspective 'doesn't count as much' and the self-doubt, the second-guessing... it sounds like a really painful cycle. How does it connect to the imposter syndrome we've discussed?", nextNode: "maya_end_connect_imposter_deeper"}, { text: "Let's hold onto that core feeling – 'doesn't count as much'. Where else in your life, or perhaps particularly at work, does that feeling tend to show up?", nextNode: "maya_end_explore_pattern_deeper"} ] },
+            maya_dp3_repair_ask_needs: { mayaSays: ["<span class='behavioral-cue'>(Thinks carefully)</span>","What do I need? I need you to hear the unfairness, definitely. And maybe help me sort through whether this is a pattern I need to confront, or if it's just this toxic workplace environment.","And yeah, please, no more trying to find the 'positive' spin when something feels fundamentally unjust."], therapistChoices: [ { text: "Absolutely. Hear the unfairness, explore pattern vs environment, no unjust positive spins. Got it. Let's start with exploring that distinction – what makes you think it might be a pattern versus just this specific workplace?", nextNode: "maya_end_reality_testing" }, { text: "Okay. No positive spins on injustice. Let's focus completely on the unfairness of that original situation with Mark right now. Tell me more about the moment you realized your idea was being presented by him, and what that felt like.", nextNode: "maya_end_explore_original_unfairness" } ] },
+            maya_dp3_weak_repair_move_on: { mayaSays: ["<span class='behavioral-cue'>(Looks away again, a subtle tightening around her mouth. Her voice remains flat.)</span>","Fine. The feedback. Like I said, it was vague. 'Needs polish'.","<span class='behavioral-cue'>(It's clear the previous rupture wasn't fully addressed, and she's likely complying superficially.)</span>"], therapistChoices: [ { text: "Okay. That vagueness sounds difficult to work with.", nextNode: "maya_end_ignore_dead_end"}, { text: "I sense we're still not quite back on track after my earlier comment. I really want to make sure we address that properly if it's still feeling unresolved for you.", nextNode: "maya_dp2_belated_repair_attempt_forced" } ] },
+            maya_dp3_probe_unresolved: { mayaSays: ["<span class='behavioral-cue'>(Hesitates, then meets your gaze briefly, looking weary)</span>","Yeah... 'unresolved' probably fits both things. The whole situation with Mark feels fundamentally unfair and wasn't addressed. And... yeah, our conversation earlier definitely felt 'off' too. It's tiring trying to figure out if I'm reading things wrong.", "<span class='behavioral-cue'>(She seems cautiously willing to re-engage the topic.)</span>"], therapistChoices: [ { text: "Thank you for saying that, Maya. It sounds like my earlier comment really contributed to things feeling 'off' and unresolved here between us. Can we focus there first, to make sure *we're* okay before digging back into the Mark situation?", nextNode: "maya_dp2_belated_repair_attempt_forced" }, { text: "It sounds incredibly draining to be holding multiple unresolved situations like that – the unfairness at work, and feeling 'off' in here. How does carrying that 'unresolved' feeling impact the burnout?", nextNode: "maya_end_link_unresolved_burnout" } ] },
+             maya_dp2_belated_repair_attempt_forced: { mayaSays: ["<span class='behavioral-cue'>(Sighs, a mix of weariness and maybe slight annoyance)</span>","Look, your comment... it wasn't great. It felt like you missed the point. But honestly? Right now, I'm just tired. Tired of this happening at work, tired of having to explain it. Can we just focus on what I can *do* about the work situation?", "<span class='behavioral-cue'>(She seems to be setting a boundary, prioritizing action over processing the therapist's misstep further right now.)</span>"], therapistChoices: [ { text: "Okay, I hear you. You're tired, and right now focusing on actionable steps for the work situation feels more important than dissecting my comment further. I respect that. Let's shift focus - what options have you considered for addressing the situation with Mark or similar issues?", nextNode: "maya_end_shift_action_respected" }, { text: "It sounds completely exhausting, dealing with this at work and then having to process missteps in here too. That tiredness is valid. Sometimes understanding the *impact* of these things, even the comments in here, helps inform what actions feel right at work. Would you be willing to explore the impact briefly before we move to action?", nextNode: "maya_end_validate_tired_explore_impact" } ] },
+            // --- End Nodes ---
+            maya_end_explore_replaceable: { mayaSays: ["(Nods) Replaceable... yeah. Makes all the extra hours feel pointless. Why push so hard if it doesn't get seen as *mine*?"], windingDown: "Feeling 'pointless' tied to being unseen is key to the burnout. Let's hold that.", proceedToSummary: true, summaryRef: "maya_summary_explore_replaceable" },
+            maya_end_explore_stupid_caring: { mayaSays: ["(Sighs) It tells me maybe I'm naive? For putting passion into work when the system doesn't always reward it fairly. Maybe I should just... care less. Protect myself more.", "<span class='behavioral-cue'>(Looks conflicted)</span>"], windingDown: "That conflict between passion and feeling the need to 'care less' to protect yourself is a heavy burden. Let's hold that.", proceedToSummary: true, summaryRef: "maya_summary_explore_stupid_caring" },
+            maya_end_explore_twice_hard: { mayaSays: ["(Nods firmly) It's like constantly running uphill. Seeing others coasting, getting praise for less, while you have to double-check everything... It's exhausting, and demoralizing when things *still* get overlooked.", "<span class='behavioral-cue'>(Voice holds fatigue and frustration)</span>"], windingDown: "'Running uphill' captures the exhaustion and demoralization clearly. Acknowledge that weight.", proceedToSummary: true, summaryRef: "maya_summary_explore_twice_hard" },
+            maya_end_connect_imposter: { mayaSays: ["Connect to imposter syndrome? Definitely. When this happens, that voice gets loud: 'See? Not good enough on your own. Your ideas need someone else to make them work.' It fuels the doubt."], windingDown: "Making that explicit link between the external event and the internal imposter voice is vital insight. Let's pause here.", proceedToSummary: true, summaryRef: "maya_summary_connect_imposter" },
+            maya_end_reality_testing: { mayaSays: ["Evidence? It's the pattern... Little things. Ideas ignored until a man says them. Surprise when I speak strongly. Vague feedback... It *feels* real, even when I doubt if I'm just imagining it.", "<span class='behavioral-cue'>(Voice gains conviction)</span>"], windingDown: "Trusting that pattern recognition, even amidst self-doubt, is an important focus. We'll end here.", proceedToSummary: true, summaryRef: "maya_summary_reality_testing" },
+            maya_end_coping_strategies: { mayaSays: ["Protect my energy? Honestly, not effectively. I push through, or vent later. Maybe I need better boundaries at work? Or ways to detach without feeling defeated?", "<span class='behavioral-cue'>(Seeking ideas)</span>"], windingDown: "Identifying the need for boundaries or different ways to detach is a great starting point. We can focus there next time.", proceedToSummary: true, summaryRef: "maya_summary_coping_strategies" },
+            maya_end_ignore_dead_end: { mayaSays: ["(Minimal nod) Yeah. Hard.", "<span class='behavioral_cue'>(Offers nothing more. Silence hangs. Completely withdrawn.)</span>"], windingDown: "Okay. We'll pause on that note for today.", proceedToSummary: true, isRupture: false, summaryRef: "maya_summary_ignore_dead_end" },
+            maya_end_ignore_shift_stressors: { mayaSays: ["(Sighs) Other stressors? Just... workload. Pressure. Agency stuff.", "<span class='behavioral_cue'>(Still vague, disengaged.)</span>"], windingDown: "The pressure of workload is significant. Let's end there.", proceedToSummary: true, isRupture: false, summaryRef: "maya_summary_ignore_shift_stressors" },
+            maya_end_surface_coping: { mayaSays: ["(Shrugs) Instrumental. Calming.", "<span class='behavioral_cue'>(Disengaged.)</span>"], windingDown: "Calming music can be a good resource. We'll stop today.", proceedToSummary: true, isRupture: false, summaryRef: "maya_summary_surface_coping" },
+            maya_end_explore_pattern_deeper: { mayaSays: ["Where else... Maybe in meetings, having to repeat myself? Or getting feedback that feels more about my 'delivery' than the idea itself?", "<span class='behavioral_cue'>(Connecting more dots)</span>"], windingDown: "Noticing those specifics – repetition, focus on delivery – adds detail to the pattern. Important connections. Let's stop here.", proceedToSummary: true, summaryRef: "maya_summary_explore_pattern_deeper" },
+            maya_end_explore_original_unfairness: { mayaSays: ["(Focusing back) The moment... In the client presentation. Mark's slide, my concept, tweaked. Stomach just dropped. Felt invisible. And furious.", "<span class='behavioral_cue'>(Emotion clear)</span>"], windingDown: "That visceral feeling of invisibility and fury sounds intense. Thank you for sharing that specific moment. We'll end here.", proceedToSummary: true, summaryRef: "maya_summary_explore_original_unfairness" },
+            maya_end_link_unresolved_burnout: { mayaSays: ["(Nods slowly) Yeah. That fits. Each unresolved thing feels like another weight. Makes it harder to feel motivated. Definitely part of the burnout.", "<span class='behavioral_cue'>(Insightful)</span>"], windingDown: "Making that link – unresolved interactions as weights contributing to burnout – is a powerful insight. Let's hold onto that.", proceedToSummary: true, summaryRef: "maya_summary_link_unresolved_burnout" },
+            maya_end_rupture_double_down: { mayaSays: ["<span class='behavioral-cue'>(Stands abruptly)</span>","You know what? I'm done. This isn't helpful. You're not listening.","<span class='behavioral-cue'>(Picks up bag)</span>","I need to go."], isRupture: true, proceedToSummary: true, summaryRef: "maya_summary_rupture_double_down" },
+            maya_end_rupture_dismiss_anger: { mayaSays: ["<span class='behavioral-cue'>(Stops at door, turns back briefly)</span>","If you can't even hear *me* when I tell you you've upset me, how is this supposed to work? I'm finding another therapist.","<span class='behavioral-cue'>(Leaves decisively.)</span>"], isRupture: true, proceedToSummary: true, summaryRef: "maya_summary_rupture_dismiss_anger" },
+            maya_end_ignore_honor_request_move_on: { mayaSays: ["(Nods curtly) Okay. So, about Mark... I was thinking maybe I should talk to my manager? Or is that too risky?", "<span class='behavioral_cue'>(Shifts topic, but underlying tension likely remains.)</span>"], windingDown: "Okay, let's explore the idea of talking to your manager. We can weigh the risks and benefits. We'll pause our session here for today.", proceedToSummary: true, isRupture: false, summaryRef: "maya_summary_ignore_honor_request_move_on" },
+            maya_end_shift_action_respected: { mayaSays: ["(Nods, seems slightly relieved to change focus) Okay. Yeah. What can I *do*... Maybe document instances like this? Or talk to HR? Or just polish my resume?", "<span class='behavioral_cue'>(Focus shifts to practicalities)</span>"], windingDown: "Exploring those options – documenting, HR, job searching – makes sense given the exhaustion. Let's pick up there next time.", proceedToSummary: true, summaryRef: "maya_summary_shift_action_respected" },
+            maya_end_validate_tired_explore_impact: { mayaSays: ["(Sighs again, but doesn't pull away) Okay... briefly. The impact? It just... confirms that feeling that maybe I *am* being too sensitive, or that my perspective isn't valid. It makes me shut down, even here.", "<span class='behavioral-cue'>(Vulnerable admission)</span>"], windingDown: "Thank you for sharing that, Maya. Connecting my comment to that feeling of invalidation and shutting down is really important. We need to hold onto that. Our time is up.", proceedToSummary: true, summaryRef: "maya_summary_validate_tired_explore_impact" },
+            maya_end_connect_imposter_deeper: { mayaSays: ["How it connects? It's like Exhibit A for the imposter voice. 'See? Even your therapist didn't really get it until you spelled it out. Your instincts must be wrong.' It just digs that hole deeper.", "<span class='behavioral-cue'>(Looks discouraged)</span>"], windingDown: "Recognizing how these interactions can become 'evidence' for the imposter voice is a powerful, though discouraging, insight. Let's end here.", proceedToSummary: true, summaryRef: "maya_summary_connect_imposter_deeper" }
+        };
+
+
+        // --- Summaries Data (Populated for ALL defined end nodes) ---
+        const summariesAlex = {
+            alex_summary_bind_values_conflict: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Validated the difficult 'no-win' feeling (Listen) and successfully explored the internal conflict between Alex's stated values (fairness) and his fear of judgment (Explore). This deepened self-understanding but didn't yet move to strategy or psychoeducation. Alliance likely strong due to validation and exploration of core conflict." },
+            alex_summary_bind_coping: { engagedSteps: ["drustrup_listen"], reflection: "Validated the difficulty (Listen) and shifted to identifying existing coping mechanisms for anxiety. While providing practical support, this bypassed deeper exploration of the values conflict or the roots of his fear, keeping the focus on symptom management rather than underlying racial consciousness (Explore/Connect missed)." },
+            alex_summary_ideal_meaning: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Listened to Alex's ideal scenario (Listen) and explored the underlying meaning/values (respect, directness, professionalism) (Explore). This connected his desire for different communication to his core values, enhancing self-awareness. Strong alliance likely maintained." },
+            alex_summary_ideal_strategy: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Validated Alex's desire for directness (Listen) and explored potential strategies *he* could use to signal openness or invite feedback (Explore). This focused on client agency and practical steps, potentially empowering him, but didn't deeply explore *why* the current dynamic exists or his assumptions about others." },
+            alex_summary_feeling_meaning_dismissed: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Excellent use of exploration. Following validation (Listen), focused on the *meaning* Alex made of feeling dismissed ('not worth engaging with') (Explore). This led to vulnerable disclosure about feeling irrelevant/obsolete, deepening the therapeutic work. Alliance strengthened." },
+            alex_summary_feeling_need_directness: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Validated the sting of silence (Listen) and explored Alex's strong preference for directness, even if critical (Explore). Understanding this value helps clarify his reactions to workplace interactions. Focused well on his perspective." },
+            alex_summary_lack_clarity_dismissal: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Validated the frustration about lack of explanation (Listen) and explored the resulting mix of anger and shame (Explore). Identifying these core emotions connected to the dismissal is crucial for processing the event. Good emotional focus." },
+            alex_summary_lack_clarity_need_diff: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Focused on Alex's need for concrete information (Listen/Explore). Exploring *why* an explanation felt preferable (resolved, concrete) highlighted his cognitive style and need for closure. Useful insight generated." },
+            alex_summary_lack_clarity_strategy: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Validated the frustration (Listen) and explored potential future actions (asking HR) (Explore strategy). Addressed the practical problem but shifted away from deeper emotional processing or exploring the underlying racial dynamics/assumptions." },
+            alex_summary_feeling_alt_strongest: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Successfully bracketed comment content to focus on core feeling (Listen/Explore). Pinpointing 'exposed' as the strongest emotion provides a clear target for deeper exploration. Good use of focusing." },
+            alex_summary_feeling_alt_exposed: { engagedSteps: ["drustrup_listen", "drustrup_explore", "drustrup_connect"], reflection: "Deepened the exploration of feeling 'exposed' (Explore) by linking it to fears about competence and belonging (Connect). This connects the in-the-moment feeling to broader anxieties about identity and perception. Strong therapeutic work." },
+             alex_summary_uncertainty_impact: { engagedSteps: ["drustrup_listen", "drustrup_explore", "drustrup_connect"], reflection: "Validated the isolating feeling of uncertainty (Listen) and explored its concrete behavioral impact (reserved, distant) (Explore/Connect). Linked the abstract fear to observable changes in interaction style. Good connection made." },
+            alex_summary_uncertainty_rules: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Listened to Alex's feeling of being overwhelmed by perceived rule changes (Listen) and explored his specific frustrations (impact vs intent, language) (Explore). Validated his subjective experience of the shift, though didn't challenge his framing or offer psychoeducation yet." },
+            alex_summary_fear_consequence_internal: { engagedSteps: ["drustrup_listen", "drustrup_explore", "drustrup_connect"], reflection: "Validated the complexity of Alex's fear (Listen), differentiating internal ('What if I am biased?') from external consequences (Explore/Connect). Focusing on the internal fear accesses deeper vulnerability and self-doubt related to his identity and values. Crucial exploration." },
+            alex_summary_fear_consequence_external: { engagedSteps: ["drustrup_listen", "drustrup_explore", "drustrup_connect"], reflection: "Explored the feared external consequences (Listen/Explore), helping Alex assess the perceived likelihood and differentiate formal vs informal risks (Connect). This addresses the anxiety practically but is less focused on his internal state or racial consciousness than exploring the internal fear." },
+             // Summaries from original mapping that were kept
+             alex_summary_feeling_need_explained: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Appreciating difficult feedback might be preferable to uncertainty is useful insight (Explore). Successfully validated need for explanation (Listen). Alliance supported by understanding this preference." },
+             alex_summary_fear_consequence: { engagedSteps: ["drustrup_listen", "drustrup_explore", "drustrup_connect"], reflection: "Validated the core fear (Listen), explored the feared identity judgment ('racist', 'obtuse') (Explore), connecting it to potential real-world poisoning of relationships (Connect). Addressed the deep character-level anxiety." },
+             alex_summary_fear_self_doubt: { engagedSteps: ["drustrup_listen", "drustrup_explore"], reflection: "Validated the fear (Listen), leading to exploration of profound self-doubt and questioning of values (Explore). Directly addressed the erosion of self-trust, likely strengthening alliance through deep empathy." },
+             alex_summary_link_mechanism: { engagedSteps: ["drustrup_listen", "drustrup_explore", "drustrup_connect"], reflection: "Validated the link between fear and stress (Listen), explored specific behavioral manifestations (Explore), connecting the feeling to observable actions (Connect). Increased client self-awareness of their patterns." },
+             alex_summary_link_coping: { engagedSteps: ["drustrup_listen"], reflection: "Validated the stress link (Listen) and identified current coping mechanisms. Provided practical support but stayed at the level of symptom management, missing deeper exploration (Explore/Connect)." }
+        };
+        const summariesMaya = {
+            maya_summary_explore_replaceable: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "Excellent recovery path. Therapist successfully repaired initial microaggression (Listen, Empathize) and used the restored trust to explore the deeper meaning of dismissal ('replaceable', 'pointless') for Maya (Understand). Addressed core feelings related to burnout/value. Alliance strengthened." },
+            maya_summary_explore_stupid_caring: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "Good repair (Listen, Empathize). Therapist explored the painful implication of Maya feeling 'stupid for caring' (Understand), linking the external event to internal conflict about engagement vs. self-protection. Allowed for vulnerable exploration. Alliance solid." },
+            maya_summary_explore_twice_hard: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand", "warner_psychoed"], reflection: "Strong path. Successful repair (Listen, Empathize), explored pattern (Understand), and validated the 'twice as hard' experience by gently normalizing it within a systemic context (subtle Psychoed). This likely validated Maya's reality powerfully. Alliance strong." },
+            maya_summary_connect_imposter: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "Effective repair (Listen, Empathize) followed by connecting the feeling of dismissal/under-recognition to Maya's presenting problem of imposter syndrome (Understand). Helped contextualize the event within her internal experience. Good integration." },
+             maya_summary_link_burnout_specific: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "Post-repair (Listen, Empathize), therapist focused on linking the experience of navigating unfair dynamics directly to the mechanisms of burnout (Understand). Helped Maya articulate the specific energy drain, increasing insight into her presenting problem." },
+            maya_summary_reality_testing: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "After repair (Listen, Empathize), therapist respected Maya's need to reality-test (Understand). Exploring the evidence for the pattern validates her perceptions while directly addressing the self-doubt. Empowering approach." },
+            maya_summary_coping_strategies: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "Repair successful (Listen, Empathize). Shifted focus to practical coping strategies as requested (Understand client need for action). Provided concrete support but potentially moved away from deeper processing of the emotional impact or systemic issues." },
+            maya_summary_ignore_dead_end: { isRupture: false, engagedSteps: [], reflection: "Therapist failed to recognize or address initial microaggression cues (Missed Listen/Empathize). Persisted with factual questions despite client withdrawal, leading to session dead end. Alliance significantly damaged, core issue ignored." },
+            maya_summary_ignore_shift_stressors: { isRupture: false, engagedSteps: [], reflection: "Microaggression ignored (Missed Listen/Empathize). Therapist shifted to unrelated stressors, avoiding the rupture and invalidating the client's immediate experience. Superficial conversation, weakened alliance." },
+            maya_summary_surface_coping: { isRupture: false, engagedSteps: [], reflection: "Microaggression ignored, therapist shifted to generic coping (Missed Listen/Empathize). Avoided rupture but invalidated client's experience. Superficial, alliance weakened, core concerns unaddressed." },
+            maya_summary_explore_pattern_deeper: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "Good post-repair work (Listen, Empathize). Explored the feeling of 'not counting' (Understand) by asking for other examples, helping Maya identify more subtle patterns (repetition, tone policing). Deepened understanding of the systemic nature of her experiences." },
+            maya_summary_explore_original_unfairness: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "After repair (Listen, Empathize), therapist respected Maya's need to focus on the original event's unfairness (Understand). Validated her anger and allowed processing of the specific visceral experience ('stomach dropped', 'invisible'). Good focus on client's priority." },
+            maya_summary_link_unresolved_burnout: { engagedSteps: ["warner_listen", "warner_understand"], reflection: "Therapist picked up on 'unresolved' cue (Listen - belatedly?) and successfully linked unresolved issues (work and therapy interaction) to burnout (Understand). Repair may still be incomplete but connection made." },
+            maya_summary_rupture_double_down: { isRupture: true, engagedSteps: [], reflection: "Severe Rupture. Therapist justified initial microaggression and doubled down defensively when challenged (Failed Listen/Empathize). Prioritized being 'right' over client's experience. Destroyed trust, client terminated." },
+            maya_summary_rupture_dismiss_anger: { isRupture: true, engagedSteps: [], reflection: "Severe Rupture. Therapist dismissed client's valid anger about the microaggression and attempted to change the subject (Failed Listen/Empathize). Completely invalidated client's reality. Client terminated due to lack of safety/respect." },
+             maya_summary_ignore_honor_request_move_on: { isRupture: false, engagedSteps: ["warner_listen"], reflection: "Therapist finally listened to client's request to move on after pushing past initial withdrawal failed (Listen). However, the core rupture from the microaggression was never adequately repaired (Missed Empathize). Alliance remains weak, shifted to surface problem-solving under duress." },
+             maya_summary_shift_action_respected: { engagedSteps: ["warner_listen"], reflection: "Therapist respected client's boundary to focus on action over processing therapist's misstep (Listen). While respecting autonomy, this potentially leaves the repair incomplete and underlying feelings unaddressed. Alliance functional but perhaps superficial." },
+             maya_summary_validate_tired_explore_impact: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "Therapist validated client's tiredness (Empathize) but gently invited brief exploration of the impact of the therapist's comment (Understand). Maya's vulnerable response suggests repair was successful and deep insight gained about the interaction's effect. Strong recovery." },
+             maya_summary_connect_imposter_deeper: { engagedSteps: ["warner_listen", "warner_empathize", "warner_understand"], reflection: "Post-repair (Listen, Empathize), explored the connection between the interaction and imposter syndrome (Understand). Maya articulating how the misstep served as 'evidence' for negative self-beliefs demonstrates deep processing. Alliance strong." }
+        };
+
+
+        // --- Core JS Functions (Should be robust now) ---
+
+        function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } }
+
+        function loadScenario(scenarioName) {
+            console.log(`Loading scenario: ${scenarioName}`);
+            currentScenario = scenarioName;
+            if (scenarioName === 'alex') { gameData = gameDataAlex; summaries = summariesAlex; introData = introDataAlex; modelData = models.drustrup; }
+            else if (scenarioName === 'maya') { gameData = gameDataMaya; summaries = summariesMaya; introData = introDataMaya; modelData = models.warner; }
+            else { console.error("Unknown scenario:", scenarioName); return; }
+
+            if (!gameData || !gameData.start || !introData || !introData.title || !modelData || !modelData.name) { console.error(`Data missing for ${scenarioName}.`); alert("Error loading scenario data."); return; }
+
+            introTitleElement.textContent = introData.title;
+            introContentElement.innerHTML = introData.content;
+            introModelSummaryElement.innerHTML = introData.modelSummaryHtml;
+            modelKeyTitle.textContent = modelData.name;
+            modelKeyContent.innerHTML = `<ul>${modelData.steps.map(step => `<li>${step.text}</li>`).join('')}</ul>`;
+
+            scenarioSelectionScreen.classList.add('hidden');
+            introScreen.classList.remove('hidden');
+            dialogueScreen.classList.add('hidden');
+            summaryScreen.classList.add('hidden');
+            modelKeyButton.classList.add('hidden');
+            resetTabsAndLine();
+            summaryScreen.classList.remove('rupture-summary');
+            summaryTitleElement.textContent = "Session Summary & Reflection";
+            if(playerReflectionElement) playerReflectionElement.value = '';
+            console.log(`Scenario ${scenarioName} loaded.`);
+        }
+
+        function startGame() {
+             console.log(`Starting game for: ${currentScenario}`);
+             if (!currentScenario || !modelData.name) { console.error("Cannot start game, scenario not loaded."); return;}
+             introScreen.classList.add('hidden');
+             dialogueScreen.classList.remove('hidden');
+             summaryScreen.classList.add('hidden');
+             modelKeyButton.classList.remove('hidden');
+             renderNode('start');
+        }
+
+         function resetTabsAndLine() { if (!tabDp1 || !branchingLine) return; ['tab-active', 'dp1-active', 'dp2-active', 'dp3-active'].forEach(cls => { tabDp1.classList.remove(cls); tabDp2.classList.remove(cls.replace('1', '2')); tabDp3.classList.remove(cls.replace('1', '3')); branchingLine.classList.remove(cls); }); }
+
+        function updateTabsAndLine(nodeKey) {
+             if (!tabDp1 || !branchingLine) return;
+             resetTabsAndLine();
+             const safeNodeKey = nodeKey || '';
+             let dpLevel = 0;
+             if (safeNodeKey.includes('_dp1_')) { dpLevel = 1; }
+             else if (safeNodeKey.includes('_dp2_')) { dpLevel = 2; }
+             else if (safeNodeKey.includes('_end_') || safeNodeKey.includes('_dp3_')) { dpLevel = 3; }
+             else if (safeNodeKey === 'start') { dpLevel = 0; }
+             if (dpLevel >= 1) { tabDp1.classList.add('tab-active'); branchingLine.classList.add('dp1-active'); }
+             if (dpLevel >= 2) { tabDp2.classList.add('tab-active'); branchingLine.classList.add('dp2-active'); }
+             if (dpLevel >= 3) { tabDp3.classList.add('tab-active'); branchingLine.classList.add('dp3-active'); }
+        }
+
+        function renderNode(nodeKey) {
+            currentNodeKey = nodeKey;
+            console.log(`Rendering node: ${currentNodeKey} (Scenario: ${currentScenario})`);
+            const nodeData = gameData[currentNodeKey];
+
+            if (!nodeData) { console.error(`Node key "${currentNodeKey}" not found.`); dialogueTextElement.innerHTML = `<p class="text-red-600 font-semibold">Error: Path broken (Node: ${currentNodeKey}). Please reset.</p>`; choicesContainer.classList.add('hidden'); proceedButtonContainer.classList.add('hidden'); return; }
+            if (!dialogueTextElement || !choicesElement || !choicesContainer || !proceedButtonContainer) { console.error("Dialogue/Choice elements missing!"); return; }
+
+            updateTabsAndLine(currentNodeKey);
+            dialogueTextElement.innerHTML = ''; choicesElement.innerHTML = ''; choicesContainer.classList.add('hidden'); proceedButtonContainer.classList.add('hidden');
+
+            const clientName = currentScenario === 'alex' ? 'Alex' : 'Maya';
+            const therapistClass = currentScenario === 'maya' ? 'speaker-therapist maya' : 'speaker-therapist';
+            if (nodeData.therapistStarts) { addDialogueLine(nodeData.therapistStarts, 'Therapist', therapistClass); }
+            const clientLines = nodeData.alexSays || nodeData.mayaSays;
+            if (clientLines) { clientLines.forEach(line => addDialogueLine(line, clientName, 'speaker-client')); }
+            if (nodeData.therapistSays) { addDialogueLine(nodeData.therapistSays, 'Therapist', therapistClass); }
+            const followUpLine = nodeData.alexFollowUp || nodeData.mayaFollowUp;
+            if (followUpLine) { addDialogueLine(followUpLine, clientName, 'speaker-client'); }
+            if (nodeData.windingDown) { addDialogueLine(nodeData.windingDown, 'Therapist', therapistClass + ' mt-6 font-semibold text-center italic'); }
+
+            if (nodeData.proceedToSummary && nodeData.summaryRef) { handleEnding(nodeData); }
+            else if (nodeData.therapistChoices && nodeData.therapistChoices.length > 0) {
+                choicesContainer.classList.remove('hidden');
+                const choicesToDisplay = [...nodeData.therapistChoices];
+                shuffleArray(choicesToDisplay);
+                setTimeout(() => {
+                    choicesElement.innerHTML = '';
+                    choicesToDisplay.forEach((choice) => {
+                        const choiceBox = document.createElement('button'); choiceBox.className = 'choice-box';
+                        const choiceTextSpan = document.createElement('span'); choiceTextSpan.className = 'choice-text'; choiceTextSpan.textContent = choice.text; choiceBox.appendChild(choiceTextSpan);
+                        choiceBox.onclick = () => makeChoice(choice.nextNode); choicesElement.appendChild(choiceBox);
+                        void choiceBox.offsetWidth; choiceBox.classList.add('fade-in');
+                    });
+                }, 150);
+            } else { console.warn(`Node ${currentNodeKey} has no choices or ending.`); addDialogueLine("(The conversation seems to end here.)", null, 'text-gray-500 italic mt-4'); }
+        }
+
+        function addDialogueLine(line, speaker, speakerClass = '') {
+             const p = document.createElement('p');
+             if (typeof line !== 'string') { console.warn("Invalid dialogue line:", line); return; }
+             const speakerPrefix = speaker ? `<strong class="font-semibold speaker-name ${speakerClass}">${speaker}:</strong> ` : '';
+             if (line.includes("<span class='behavioral-cue'>")) { p.innerHTML = line; p.className = 'my-1'; }
+             else if (line.startsWith('(') && line.endsWith(')')) { p.className = 'text-gray-500 italic text-sm my-1 ' + speakerClass; p.textContent = line; }
+             else { p.className = `my-2`; p.innerHTML = speakerPrefix + line; } // Apply class to strong tag in CSS if needed
+             if (dialogueTextElement) dialogueTextElement.appendChild(p); else console.error("dialogueTextElement missing");
+        }
+
+         function handleEnding(nodeData) { if (!proceedButtonContainer || !proceedToSummaryButton) return; proceedButtonContainer.classList.remove('hidden'); proceedToSummaryButton.onclick = () => showSummary(nodeData.summaryRef, nodeData.isRupture || false); }
+
+         function makeChoice(nextNodeKey) {
+            console.log(`Choice made, going to: ${nextNodeKey}`);
+             const choiceButtons = choicesElement.querySelectorAll('.choice-box');
+             choiceButtons.forEach(button => button.disabled = true); // Prevent double clicks
+             setTimeout(() => { renderNode(nextNodeKey); }, 250);
+         }
+
+         function showSummary(summaryRefKey, isRupture = false) {
+             console.log(`Showing summary for ref: ${summaryRefKey}`);
+             if (!summaryScreen || !summaryTitleElement || !summaryModelNameElement || !summaryModelStepsElement || !summaryReflectionTextElement || !summaryRuptureNoteElement || !dialogueScreen || !playerReflectionElement || !modelData.name || !modelData.steps) { console.error("Summary components missing!"); if(dialogueScreen)dialogueScreen.classList.add('hidden'); if(summaryScreen)summaryScreen.classList.remove('hidden'); return; }
+
+             const activeSummaries = currentScenario === 'alex' ? summariesAlex : summariesMaya;
+             if (!activeSummaries || Object.keys(activeSummaries).length === 0) { console.error(`Summaries for ${currentScenario} not loaded!`); summaryReflectionTextElement.textContent = 'Error: Summaries data not loaded.'; summaryModelStepsElement.innerHTML = ''; }
+             else {
+                  const summaryData = activeSummaries[summaryRefKey];
+                  if (!summaryData) { console.error(`Summary ref key "${summaryRefKey}" not found.`); summaryReflectionTextElement.textContent = `Error: Summary details not found.`; summaryModelStepsElement.innerHTML = ''; }
+                  else {
+                     summaryModelNameElement.textContent = modelData.name;
+                     summaryModelStepsElement.innerHTML = modelData.steps.map(step => `<li class="${(summaryData.engagedSteps || []).includes(step.id) ? 'step-engaged' : ''}">${step.text}</li>`).join('');
+                     summaryReflectionTextElement.textContent = summaryData.reflection;
+                     const ruptureDetected = isRupture || summaryData.isRupture;
+                     summaryScreen.classList.toggle('rupture-summary', ruptureDetected);
+                     summaryTitleElement.textContent = ruptureDetected ? "Session Rupture & Reflection" : "Session Summary & Reflection";
+                     summaryRuptureNoteElement.classList.toggle('hidden', !ruptureDetected);
+                 }
+             }
+             playerReflectionElement.value = ''; dialogueScreen.classList.add('hidden'); summaryScreen.classList.remove('hidden'); modelKeyButton.classList.add('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' });
+         }
+
+        function resetGame() {
+             console.log("Resetting game.");
+             if(summaryScreen) summaryScreen.classList.add('hidden'); if(dialogueScreen) dialogueScreen.classList.add('hidden'); if(introScreen) introScreen.classList.add('hidden'); if(scenarioSelectionScreen) scenarioSelectionScreen.classList.remove('hidden');
+             if(dialogueTextElement) dialogueTextElement.innerHTML = ''; if(choicesElement) choicesElement.innerHTML = ''; if(proceedButtonContainer) proceedButtonContainer.classList.add('hidden'); if(modelKeyModal) modelKeyModal.classList.remove('visible'); if(modelKeyButton) modelKeyButton.classList.add('hidden');
+             currentNodeKey = null; currentScenario = null; gameData = {}; summaries = {}; introData = {}; modelData = {};
+             resetTabsAndLine();
+             if(summaryScreen) summaryScreen.classList.remove('rupture-summary'); if(summaryTitleElement) summaryTitleElement.textContent = "Session Summary & Reflection"; if(summaryRuptureNoteElement) summaryRuptureNoteElement.classList.add('hidden');
+             window.scrollTo({ top: 0, behavior: 'smooth' });
+         }
+
+         function toggleModelKey(forceState) {
+             if (!modelKeyModal) return; const currentlyVisible = modelKeyModal.classList.contains('visible'); const shouldBeVisible = typeof forceState === 'boolean' ? forceState : !currentlyVisible; modelKeyModal.classList.toggle('visible', shouldBeVisible);
+         }
+
+        // --- Initial Load Event Listener ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM loaded. Assigning elements.");
+            // Assign DOM Elements (condensed)
+            scenarioSelectionScreen = document.getElementById('scenario-selection-screen'); introScreen = document.getElementById('intro-screen'); dialogueScreen = document.getElementById('dialogue-screen'); summaryScreen = document.getElementById('summary-screen');
+            introTitleElement = document.getElementById('intro-title'); introContentElement = document.getElementById('intro-content'); introModelSummaryElement = document.getElementById('intro-model-summary');
+            dialogueTextElement = document.getElementById('dialogue-text'); choicesContainer = document.getElementById('choices-container'); choicesElement = document.getElementById('choices'); proceedButtonContainer = document.getElementById('proceed-button-container'); proceedToSummaryButton = document.getElementById('proceed-to-summary-button');
+            summaryContentElement = document.getElementById('summary-content'); summaryTitleElement = document.getElementById('summary-title'); summaryModelNameElement = document.getElementById('summary-model-name'); summaryModelStepsElement = document.getElementById('summary-model-steps'); summaryReflectionTextElement = document.getElementById('summary-reflection-text'); summaryRuptureNoteElement = document.getElementById('summary-rupture-note');
+            tabDp1 = document.getElementById('tab-dp1'); tabDp2 = document.getElementById('tab-dp2'); tabDp3 = document.getElementById('tab-dp3'); branchingLine = document.getElementById('branching-line');
+            playerReflectionElement = document.getElementById('playerReflection'); startAlexButton = document.getElementById('start-alex-button'); startMayaButton = document.getElementById('start-maya-button'); startSessionButton = document.getElementById('start-session-button'); resetButton = document.getElementById('reset-button');
+            modelKeyButton = document.getElementById('model-key-button'); modelKeyModal = document.getElementById('model-key-modal'); modelKeyTitle = document.getElementById('model-key-title'); modelKeyContent = document.getElementById('model-key-content');
+
+            // Basic check
+            const requiredElements = [scenarioSelectionScreen, introScreen, dialogueScreen, summaryScreen, startAlexButton, startMayaButton, startSessionButton, resetButton, modelKeyButton, modelKeyModal, proceedToSummaryButton, dialogueTextElement, choicesContainer, choicesElement, summaryTitleElement];
+            if (requiredElements.some(el => !el)) { console.error("CRITICAL: Essential DOM elements missing!"); alert("Error initializing simulation."); return; }
+
+            // Add Event Listeners
+            startAlexButton.addEventListener('click', () => loadScenario('alex')); startMayaButton.addEventListener('click', () => loadScenario('maya')); startSessionButton.addEventListener('click', startGame); resetButton.addEventListener('click', resetGame); modelKeyButton.addEventListener('click', (e) => { e.stopPropagation(); toggleModelKey(); });
+            document.addEventListener('click', (event) => { if (modelKeyModal && modelKeyModal.classList.contains('visible') && !modelKeyModal.contains(event.target) && !modelKeyButton.contains(event.target)) { toggleModelKey(false); } });
+
+            // Initial display state
+            introScreen.classList.add('hidden'); dialogueScreen.classList.add('hidden'); summaryScreen.classList.add('hidden'); scenarioSelectionScreen.classList.remove('hidden'); modelKeyButton.classList.add('hidden'); modelKeyModal.classList.remove('visible');
+            console.log("Initialization complete.");
+        });
+    </script>
+
+</body>
+</html>
